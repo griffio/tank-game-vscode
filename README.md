@@ -1,5 +1,24 @@
 # Tank Game
 
+Prompt
+
+```
+Create a game using plain html/css and javascript
+Scenerio
+A top-down 2D single-player tank battle game with retro 8-bit graphics.
+The assets folder contains a tank sprite with a tank body and tank turret
+The turrent should rotate
+W, A, S, D: Move the tank
+Mouse: Aim the tank's turret
+
+Left Click: Fire Armor Piercing (AP) ammo
+Right Click: Fire High Explosive (HE) ammo
+
+The tile assets are the game map - this should be a scrollable map area
+
+The tank should use simple physics to accelerate and stop
+```
+
 A 2D top-down tank battle game built with HTML5 Canvas and JavaScript.
 
 ## Features
