@@ -32,6 +32,13 @@ const tank = {
     velocityX: 0,
     velocityY: 0,
     rotationSpeed: 3,
+    // Add new physics properties
+    angularVelocity: 0,
+    maxAngularVelocity: 2,
+    turnFriction: 0.95,
+    lateralFriction: 0.85,
+    engineForce: 0.4,
+    mass: 1,
     turretOffsetX: 0,
     turretOffsetY: 0,
     lastShotTime: 0,
@@ -137,26 +144,55 @@ function createMuzzleFlash(x, y, angle) {
 
 // Update game state
 function update() {
-    // Tank physics
-    let accelerationX = 0;
-    let accelerationY = 0;
+    // Tank physics - separate longitudinal and lateral forces
+    const forwardDirection = tank.rotation * Math.PI / 180;
+    let engineForce = 0;
 
+    // Longitudinal forces (forward/backward)
     if (keys['w']) {
-        accelerationX = Math.cos(tank.rotation * Math.PI / 180) * tank.acceleration;
-        accelerationY = Math.sin(tank.rotation * Math.PI / 180) * tank.acceleration;
+        engineForce = tank.engineForce;
+    } else if (keys['s']) {
+        engineForce = -tank.engineForce * 0.5; // Reverse is weaker
     }
-    if (keys['s']) {
-        accelerationX = -Math.cos(tank.rotation * Math.PI / 180) * tank.acceleration * 0.5;
-        accelerationY = -Math.sin(tank.rotation * Math.PI / 180) * tank.acceleration * 0.5;
-    }
-    if (keys['a']) tank.rotation -= tank.rotationSpeed;
-    if (keys['d']) tank.rotation += tank.rotationSpeed;
 
-    // Apply physics
+    // Calculate forward velocity component
+    const forwardVelocity = tank.velocityX * Math.cos(forwardDirection) + 
+                           tank.velocityY * Math.sin(forwardDirection);
+
+    // Apply engine force in forward direction
+    const accelerationX = Math.cos(forwardDirection) * engineForce;
+    const accelerationY = Math.sin(forwardDirection) * engineForce;
+
+    // Turning mechanics
+    let targetAngularVelocity = 0;
+    if (keys['a']) targetAngularVelocity = -tank.rotationSpeed;
+    if (keys['d']) targetAngularVelocity = tank.rotationSpeed;
+
+    // Scale turning rate based on forward velocity
+    const velocityFactor = Math.min(Math.abs(forwardVelocity) / tank.maxSpeed, 1);
+    targetAngularVelocity *= velocityFactor;
+
+    // Smooth angular velocity transition
+    tank.angularVelocity += (targetAngularVelocity - tank.angularVelocity) * 0.1;
+    tank.angularVelocity *= tank.turnFriction;
+
+    // Apply rotation
+    tank.rotation += tank.angularVelocity;
+
+    // Update velocities with longitudinal forces
     tank.velocityX += accelerationX;
     tank.velocityY += accelerationY;
-    
-    // Apply friction
+
+    // Apply lateral friction (perpendicular to movement direction)
+    const lateralDirection = forwardDirection + Math.PI / 2;
+    const lateralVelocity = tank.velocityX * Math.cos(lateralDirection) + 
+                           tank.velocityY * Math.sin(lateralDirection);
+
+    // Apply lateral friction force
+    tank.velocityX -= Math.cos(lateralDirection) * lateralVelocity * tank.lateralFriction;
+    tank.velocityY -= Math.sin(lateralDirection) * lateralVelocity * tank.lateralFriction;
+
+    // Apply general friction
     tank.velocityX *= tank.friction;
     tank.velocityY *= tank.friction;
 
