@@ -1,5 +1,7 @@
 # Tank Game
 
+![Tank Game Preview](assets/tank.gif)
+
 A 2D tank game with realistic tracked vehicle physics implemented in JavaScript.
 
 ## Features
