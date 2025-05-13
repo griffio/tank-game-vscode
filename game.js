@@ -59,7 +59,13 @@ const map = {
 // Simple map data (can be expanded with different tile types)
 const mapData = Array(MAP_ROWS).fill().map(() => Array(MAP_COLS).fill(0));
 
-let mousePosition = { x: 0, y: 0 };
+// Update the mousePosition object to store world coordinates
+let mousePosition = { 
+    screenX: 0, 
+    screenY: 0,
+    worldX: 0,
+    worldY: 0 
+};
 
 // Asset loading
 const sprites = {
@@ -101,8 +107,11 @@ canvas.addEventListener('mousedown', (e) => shoot(e.button));
 // Update mouse position on mousemove
 canvas.addEventListener('mousemove', (e) => {
     const rect = canvas.getBoundingClientRect();
-    mousePosition.x = e.clientX - rect.left;
-    mousePosition.y = e.clientY - rect.top;
+    mousePosition.screenX = e.clientX - rect.left;
+    mousePosition.screenY = e.clientY - rect.top;
+    // Convert screen coordinates to world coordinates
+    mousePosition.worldX = mousePosition.screenX + map.offsetX;
+    mousePosition.worldY = mousePosition.screenY + map.offsetY;
 });
 
 // Game loop
@@ -217,15 +226,9 @@ function update() {
     map.offsetY = Math.max(0, Math.min(tank.y - canvas.height/2, map.height - canvas.height));
 
     // Turret rotation - calculate angle between tank and mouse position
-    const screenCenterX = canvas.width / 2;
-    const screenCenterY = canvas.height / 2;
-    
-    // Adjust mouse position relative to tank's position
-    const relativeMouseX = mousePosition.x - screenCenterX;
-    const relativeMouseY = mousePosition.y - screenCenterY;
-    
-    // Calculate turret angle with 90-degree offset
-    tank.turretAngle = Math.atan2(relativeMouseY, relativeMouseX) + Math.PI/2;
+    const dx = mousePosition.worldX - tank.x;
+    const dy = mousePosition.worldY - tank.y;
+    tank.turretAngle = Math.atan2(dy, dx) + Math.PI/2;
 
     // Update particles
     particles.forEach((particle, index) => {
