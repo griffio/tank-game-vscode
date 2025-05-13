@@ -42,7 +42,7 @@ const tank = {
     turretOffsetX: 0,
     turretOffsetY: 0,
     lastShotTime: 0,
-    shotCooldown: 2000, // 2 seconds in milliseconds
+    shotCooldown: 1000, // 1 second in milliseconds
     isReloading: false,
 };
 
